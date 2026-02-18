@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#dc2626">
+<title>🏎️ Campeonato de Kart</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#1a1a2e;min-height:100vh;padding-bottom:60px}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)}
+.login-box{background:white;border-radius:24px;padding:40px 32px;max-width:440px;width:100%;box-shadow:0 30px 60px rgba(0,0,0,.5)}
+.login-logo{text-align:center;margin-bottom:24px}
+.login-logo .ico{font-size:80px;display:block;line-height:1}
+.login-logo h1{font-size:22px;color:#1a1a2e;font-weight:900;margin-top:10px}
+.login-logo p{font-size:13px;color:#888;margin-top:4px}
+.lfield{margin-bottom:16px}
+.lfield label{display:block;font-size:12px;font-weight:800;color:#555;margin-bottom:7px;text-transform:uppercase;letter-spacing:.6px}
+.lfield input{width:100%;padding:13px 16px;border:2px solid #e5e7eb;border-radius:11px;font-size:16px;background:#fafafa}
+.lfield input:focus{outline:none;border-color:#dc2626;background:white}
+.btn-login{width:100%;padding:14px;background:linear-gradient(135deg,#dc2626,#991b1b);color:white;border:none;border-radius:12px;font-size:17px;font-weight:800;cursor:pointer;margin-top:10px;box-shadow:0 4px 14px rgba(220,38,38,.4)}
+.login-creds{margin-top:20px;border-radius:12px;overflow:hidden;border:1px solid #f3f4f6}
+.cred-row{display:flex;align-items:center;padding:13px 16px;gap:12px}
+.cred-row.ca{background:#fff5f5;border-bottom:1px solid #f3f4f6}
+.cred-row.cp{background:#eff6ff}
+.cred-ico{font-size:22px;width:34px;text-align:center}
+.cred-info strong{display:block;font-size:13px;color:#333}
+.cred-info span{font-size:12px;color:#888}
+.err{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:10px 14px;border-radius:10px;font-size:14px;margin-bottom:14px;text-align:center;display:none}
+.wrap{max-width:1200px;margin:0 auto;padding:15px}
+.hdr{background:linear-gradient(135deg,#1a1a2e,#0f3460);border-radius:16px;padding:16px 20px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.hdr h2{color:white;font-size:17px;font-weight:900;margin:0}
+.hdr p{color:rgba(255,255,255,.55);font-size:13px;margin:4px 0 0}
+.rb{display:inline-block;padding:3px 11px;border-radius:20px;font-size:11px;font-weight:800;text-transform:uppercase;margin-right:6px}
+.rb-a{background:#dc2626;color:white}
+.rb-p{background:#3b82f6;color:white}
+.btn-out{padding:8px 16px;background:rgba(255,255,255,.1);color:white;border:1px solid rgba(255,255,255,.2);border-radius:8px;cursor:pointer;font-size:13px;font-weight:600}
+.nav{background:white;border-radius:14px;padding:10px;margin-bottom:14px;display:flex;flex-wrap:wrap;gap:5px;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.nb{flex:1;min-width:72px;padding:10px 5px;background:#f9fafb;border:none;border-radius:10px;cursor:pointer;font-size:11px;font-weight:700;color:#666;text-align:center;line-height:1.5}
+.nb.active{background:#dc2626;color:white}
+.nsep{width:100%;height:1px;background:#f3f4f6;margin:3px 0}
+.nlbl{width:100%;font-size:10px;font-weight:800;color:#bbb;text-transform:uppercase;letter-spacing:.6px;padding:2px 4px}
+.card{background:white;border-radius:14px;padding:20px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.ct{font-size:18px;font-weight:900;color:#1a1a2e;margin-bottom:18px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:18px}
+.stc{background:linear-gradient(135deg,#1a1a2e,#0f3460);color:white;padding:16px;border-radius:12px;text-align:center}
+.stn{font-size:32px;font-weight:900;line-height:1}
+.stl{font-size:11px;opacity:.75;margin-top:5px;font-weight:600}
+.fsec{background:#f9fafb;border-radius:12px;padding:16px;margin-bottom:16px;border:1px solid #f3f4f6}
+.fsec h3{font-size:13px;font-weight:800;color:#444;margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f label{display:block;font-size:11px;font-weight:800;color:#666;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
+.f input,.f select,.f textarea{width:100%;padding:10px 12px;border:2px solid #e5e7eb;border-radius:8px;font-size:15px;background:white}
+.f input:focus,.f select:focus{outline:none;border-color:#dc2626}
+.f{margin-bottom:12px}
+.btn{padding:12px 18px;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;width:100%;margin-top:8px}
+.bg{background:#10b981;color:white}
+.br{background:#dc2626;color:white}
+.bb{background:#3b82f6;color:white}
+.bw{background:#e5e7eb;color:#444}
+.bsm{padding:7px 13px;font-size:13px;width:auto;margin:0}
+.li{background:#f9fafb;border-radius:10px;padding:13px 16px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid #f3f4f6}
+.pnum{width:36px;height:36px;background:#dc2626;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;flex-shrink:0}
+.catd{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:800}
+.cd{background:#fef3c7;color:#d97706}
+.cb{background:#dbeafe;color:#2563eb}
+.dbtn{padding:6px 12px;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:7px;cursor:pointer;font-size:13px;font-weight:700}
+.tabs{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:3px}
+.tab{padding:9px 16px;border:none;border-radius:8px;cursor:pointer;white-space:nowrap;font-size:13px;font-weight:700;background:#f3f4f6;color:#666}
+.tab.active{background:#dc2626;color:white}
+.tw{overflow-x:auto;border-radius:10px;border:1px solid #f3f4f6}
+table{width:100%;border-collapse:collapse;min-width:280px}
+th{background:#f9fafb;padding:11px 13px;text-align:left;font-size:12px;font-weight:800;color:#555;border-bottom:2px solid #f3f4f6;white-space:nowrap;text-transform:uppercase;letter-spacing:.3px}
+td{padding:11px 13px;border-bottom:1px solid #f9fafb;font-size:14px;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafafa}
+.pb{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;margin:auto}
+.p1{background:#fef3c7;color:#d97706}.p2{background:#f3f4f6;color:#6b7280}.p3{background:#fdf2e9;color:#c2682e}
+.ptb{font-size:19px;font-weight:900;color:#dc2626}
+.podium{display:flex;justify-content:center;align-items:flex-end;gap:10px;padding:16px 0 28px;flex-wrap:wrap}
+.pp{text-align:center;border-radius:14px;padding:16px 12px;min-width:105px}
+.pp1{background:linear-gradient(135deg,#fef9c3,#fde047);order:2;padding-bottom:28px}
+.pp2{background:linear-gradient(135deg,#f3f4f6,#e5e7eb);order:1;padding-bottom:18px}
+.pp3{background:linear-gradient(135deg,#fdf2e9,#f5c5a3);order:3;padding-bottom:8px}
+.pm{font-size:34px}.pp-pos{font-size:22px;font-weight:900}
+.pp1 .pp-pos{color:#ca8a04}.pp2 .pp-pos{color:#6b7280}.pp3 .pp-pos{color:#c2682e}
+.ppn{font-weight:800;font-size:13px;margin:5px 0 4px;color:#1a1a2e}.ppp{font-size:15px;font-weight:900}
+.pp1 .ppp{color:#ca8a04}
+.stg-card{border:2px solid #f3f4f6;border-radius:12px;padding:16px;margin-bottom:10px;cursor:pointer}
+.stg-card.open{border-color:#dc2626;background:#fff8f8}
+.stg-hdr{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.stg-name{font-weight:900;font-size:15px;color:#1a1a2e}
+.stg-date{font-size:13px;color:#888;margin-top:3px}
+.stg-body{margin-top:14px;border-top:2px solid #f3f4f6;padding-top:14px}
+.sectit{font-size:12px;font-weight:900;color:#1a1a2e;margin:14px 0 8px;padding-bottom:5px;border-bottom:2px solid #f3f4f6;text-transform:uppercase;letter-spacing:.5px}
+.krow{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:8px;background:white;border:1px solid #f3f4f6;margin-bottom:6px}
+.ktag{background:#1a1a2e;color:white;padding:5px 14px;border-radius:20px;font-weight:800;font-size:13px}
+.brow{display:flex;align-items:center;gap:14px;padding:12px 16px;background:#f0fdf4;border-radius:10px;margin-bottom:8px;border:1px solid #bbf7d0}
+.btime{font-size:22px;font-weight:900;color:#16a34a;font-family:monospace}
+.bpilot{font-size:14px;font-weight:700;color:#1a1a2e}
+.bstage{font-size:12px;color:#666;margin-top:2px}
+.pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:10px}
+.pi{padding:11px;border-radius:10px;text-align:center;font-size:13px;font-weight:700;line-height:1.4}
+.pres{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.abs{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+.dcl{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa}
+.acc{border:1px solid #f3f4f6;border-radius:11px;margin-bottom:8px;overflow:hidden}
+.ach{padding:13px 16px;background:#f9fafb;cursor:pointer;font-weight:800;display:flex;justify-content:space-between;align-items:center;user-select:none;font-size:14px}
+.acb{padding:16px;display:none}
+.acb.open{display:block}
+.info{padding:12px 14px;border-radius:10px;font-size:13px;margin-bottom:12px;line-height:1.5}
+.ib{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af}
+.ig{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
+.iy{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+.readonly-bar{background:linear-gradient(135deg,#1e40af,#1d4ed8);color:white;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:700;text-align:center;margin-bottom:14px}
+@media(max-width:600px){.frow{grid-template-columns:1fr}.podium{gap:8px}.pp{min-width:95px}.hdr h2{font-size:15px}td,th{padding:8px 10px;font-size:13px}}
+</style>
+</head>
+<body>
+<div id="APP">Carregando...</div>
+<script>
+// ====================== BANCO ======================
+const DB={get(k){try{const d=localStorage.getItem(k);return d?JSON.parse(d):null}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+
+// ====================== CREDENCIAIS FIXAS ======================
+const CREDS={admin:{u:'admin',p:'admin123'},pilot:{u:'piloto',p:'piloto123'}};
+
+// ====================== ESTADO ======================
+let G={
+  user:DB.get('kart_sess'),page:'standings',
+  editStageId:null,editTab:'draw',editCat:'Dinos',
+  viewCat:'Dinos',standCat:'Dinos',openStageId:null,
+  data:DB.get('kart_data')||{
+    name:'Campeonato de Kart Rental',regulation:'',partners:[],
+    pilots:[],karts:[],stages:[],
+    points:{qualifying:[10,9,8,7,6,5,4,3,2,1],battery:[25,22,20,18,16,14,12,10,8,6,4,2],bestLapBonus:1,bestQualifyBonus:1}
+  }
+};
+function save(){DB.set('kart_data',G.data);DB.set('kart_sess',G.user)}
+function uid(){return 'id'+Date.now()+Math.random().toString(36).substr(2,6)}
+
+// ====================== AUTH ======================
+function doLogin(e){
+  e.preventDefault();
+  const u=document.getElementById('lU').value.trim().toLowerCase();
+  const p=document.getElementById('lP').value;
+  if(u===CREDS.admin.u&&p===CREDS.admin.p){G.user={role:'admin',name:'Administrador'};G.page='home';save();render();}
+  else if(u===CREDS.pilot.u&&p===CREDS.pilot.p){G.user={role:'pilot',name:'Piloto'};G.page='standings';save();render();}
+  else{const el=document.getElementById('lerr');if(el){el.textContent='Usuário ou senha incorretos!';el.style.display='block';}}
+}
+function logout(){G.user=null;DB.set('kart_sess',null);render()}
+function goto(p){G.page=p;G.editStageId=null;render()}
+
+// ====================== PILOTOS ======================
+function addPilot(e){
+  e.preventDefault();
+  const name=document.getElementById('pN').value.trim();
+  const num=document.getElementById('pNm').value.trim();
+  const cat=document.getElementById('pC').value;
+  if(!name)return;
+  G.data.pilots.push({id:uid(),name,number:num||null,cat});
+  save();render();
+}
+function delPilot(id){if(!confirm('Excluir piloto?'))return;G.data.pilots=G.data.pilots.filter(p=>p.id!==id);save();render();}
+
+// ====================== KARTS ======================
+function addKart(e){
+  e.preventDefault();
+  const num=document.getElementById('kN').value.trim();
+  if(!num)return;
+  if(G.data.karts.find(k=>k.num===num))return alert('Kart '+num+' ja cadastrado!');
+  G.data.karts.push({id:uid(),num});save();render();
+}
+function delKart(id){G.data.karts=G.data.karts.filter(k=>k.id!==id);save();render();}
+
+// ====================== ETAPAS ======================
+function addStage(e){
+  e.preventDefault();
+  const name=document.getElementById('sN').value.trim();
+  const date=document.getElementById('sD').value;
+  G.data.stages.push({id:uid(),name,date,kartDraw:{'Dinos':[],'Baby Dinos':[]},qualifying:{'Dinos':[],'Baby Dinos':[]},battery1:{'Dinos':[],'Baby Dinos':[]},battery2:{'Dinos':[],'Baby Dinos':[]}});
+  save();render();
+}
+function delStage(id){if(!confirm('Excluir etapa?'))return;G.data.stages=G.data.stages.filter(s=>s.id!==id);save();render();}
+function openEdit(id){G.editStageId=id;G.editTab='draw';G.editCat='Dinos';G.page='edit';render();}
+function setTab(t){G.editTab=t;render()}
+function setCat(c){G.editCat=c;render()}
+
+// ====================== SORTEIO (arquivado) ======================
+function doDraw(e){
+  e.preventDefault();
+  const cat=G.editCat;
+  const stage=G.data.stages.find(s=>s.id===G.editStageId);
+  if(!stage)return;
+  const pilots=G.data.pilots.filter(p=>p.cat===cat);
+  if(!pilots.length)return alert('Nenhum piloto nesta categoria!');
+  const karts=[...G.data.karts].sort(()=>Math.random()-.5);
+  if(karts.length<pilots.length)return alert('Karts insuficientes!');
+  if(stage.kartDraw[cat]&&stage.kartDraw[cat].length>0){if(!confirm('Ja existe sorteio para '+cat+'. Refazer?'))return;}
+  stage.kartDraw[cat]=pilots.map((p,i)=>({pilotId:p.id,pilotName:p.name,pilotNumber:p.number,kartNum:karts[i].num}));
+  save();alert('Sorteio arquivado!');render();
+}
+
+// ====================== QUALIFYING ======================
+function saveQ(e){
+  e.preventDefault();
+  const stage=G.data.stages.find(s=>s.id===G.editStageId);
+  if(!stage)return;
+  const cat=G.editCat;
+  const results=[];
+  G.data.pilots.filter(p=>p.cat===cat).forEach(pilot=>{
+    const el=document.getElementById('qt_'+pilot.id);
+    const t=el?el.value.trim():'';
+    if(t)results.push({pilotId:pilot.id,pilotName:pilot.name,pilotNumber:pilot.number,time:t,position:0,points:0});
+  });
+  results.sort((a,b)=>a.time.localeCompare(b.time));
+  results.forEach((r,i)=>{r.position=i+1;r.points=G.data.points.qualifying[i]||0;});
+  stage.qualifying[cat]=results;save();alert('Qualifying salvo!');render();
+}
+
+// ====================== BATERIA ======================
+function saveB(e,bn){
+  e.preventDefault();
+  const stage=G.data.stages.find(s=>s.id===G.editStageId);
+  if(!stage)return;
+  const cat=G.editCat;
+  const results=[];
+  G.data.pilots.filter(p=>p.cat===cat).forEach(pilot=>{
+    const pos=parseInt((document.getElementById('bp'+bn+'_'+pilot.id)||{}).value)||0;
+    const pen=parseInt((document.getElementById('bn'+bn+'_'+pilot.id)||{}).value)||0;
+    const vl=(document.getElementById('bv'+bn+'_'+pilot.id)||{}).value||'';
+    const dcl=(document.getElementById('bd'+bn+'_'+pilot.id)||{}).checked||false;
+    const dnp=(document.getElementById('bx'+bn+'_'+pilot.id)||{}).checked||false;
+    let pts=0;if(!dcl&&!dnp&&pos>0)pts=G.data.points.battery[pos-1]||0;
+    results.push({pilotId:pilot.id,pilotName:pilot.name,pilotNumber:pilot.number,position:pos,points:pts,penalties:pen,bestLap:vl.trim(),disqualified:dcl,didNotParticipate:dnp});
+  });
+  stage['battery'+bn][cat]=results;save();alert(bn+'a Bateria salva!');render();
+}
+
+// ====================== CALCULO ======================
+function calcSt(cat){
+  return G.data.pilots.filter(p=>p.cat===cat).map(pilot=>{
+    let total=0;const rows=[];
+    G.data.stages.forEach(stage=>{
+      let sp=0,bonus=0,pen=0;
+      const q=(stage.qualifying[cat]||[]).find(x=>x.pilotId===pilot.id);
+      if(q){sp+=q.points||0;if((stage.qualifying[cat]||[])[0]?.pilotId===pilot.id)bonus+=G.data.points.bestQualifyBonus;}
+      ['battery1','battery2'].forEach(bk=>{const b=(stage[bk][cat]||[]).find(x=>x.pilotId===pilot.id);if(b&&!b.disqualified&&!b.didNotParticipate){sp+=b.points||0;pen+=b.penalties||0;}});
+      const allB=[...(stage.battery1[cat]||[]),...(stage.battery2[cat]||[])].filter(b=>b.bestLap&&!b.disqualified&&!b.didNotParticipate);
+      if(allB.length){allB.sort((a,b)=>a.bestLap.localeCompare(b.bestLap));if(allB[0].pilotId===pilot.id)bonus+=G.data.points.bestLapBonus;}
+      const fp=sp+bonus-pen;total+=fp;
+      rows.push({stageName:stage.name,points:fp,bonus,pen});
+    });
+    return {pilotId:pilot.id,pilotName:pilot.name,pilotNumber:pilot.number,total,rows};
+  }).sort((a,b)=>b.total-a.total);
+}
+
+function toggleAcc(id){const el=document.getElementById(id);if(el)el.classList.toggle('open');}
+
+// ====================== LOGIN RENDER ======================
+function renderLogin(){
+  return `<div class="login-wrap"><div class="login-box">
+    <div class="login-logo"><span class="ico">🏎️</span><h1>${G.data.name}</h1><p>Sistema de Gerenciamento</p></div>
+    <div id="lerr" class="err"></div>
+    <form onsubmit="doLogin(event)">
+      <div class="lfield"><label>Usuário</label><input type="text" id="lU" placeholder="Digite seu usuário" required autocomplete="username"></div>
+      <div class="lfield"><label>Senha</label><input type="password" id="lP" placeholder="Digite sua senha" required autocomplete="current-password"></div>
+      <button type="submit" class="btn-login">Entrar →</button>
+    </form>
+    <div class="login-creds">
+      <div class="cred-row ca"><div class="cred-ico">👑</div><div class="cred-info"><strong>Administrador</strong><span>usuário: admin | senha: admin123</span></div></div>
+      <div class="cred-row cp"><div class="cred-ico">🪖</div><div class="cred-info"><strong>Pilotos (todos)</strong><span>usuário: piloto | senha: piloto123</span></div></div>
+    </div>
+  </div></div>`;
+}
+
+// ====================== HEADER ======================
+function renderHeader(){
+  const isA=G.user&&G.user.role==='admin';
+  return `<div class="hdr"><div><h2>🏎️ ${G.data.name}</h2><p><span class="rb ${isA?'rb-a':'rb-p'}">${isA?'Admin':'Piloto'}</span>${G.user.name}</p></div><button class="btn-out" onclick="logout()">Sair ↩</button></div>`;
+}
+
+// ====================== NAV ======================
+function renderNav(){
+  const isA=G.user&&G.user.role==='admin';
+  const p=G.page;
+  return `<div class="nav">
+    <span class="nlbl">Visualização</span>
+    <button class="nb ${p==='standings'?'active':''}" onclick="goto('standings')">🏆<br>Ranking<br>Geral</button>
+    <button class="nb ${p==='stage-view'?'active':''}" onclick="goto('stage-view')">📋<br>Ranking<br>Etapas</button>
+    <button class="nb ${p==='bestlaps'?'active':''}" onclick="goto('bestlaps')">⚡<br>Melhores<br>Voltas</button>
+    <button class="nb ${p==='presence'?'active':''}" onclick="goto('presence')">👥<br>Presença</button>
+    <button class="nb ${p==='pilot-list'?'active':''}" onclick="goto('pilot-list')">🪖<br>Pilotos</button>
+    ${isA?`<div class="nsep"></div><span class="nlbl">Administração</span>
+    <button class="nb ${p==='home'?'active':''}" onclick="goto('home')">🏠<br>Painel</button>
+    <button class="nb ${p==='adm-p'?'active':''}" onclick="goto('adm-p')">👤<br>Pilotos</button>
+    <button class="nb ${p==='adm-k'?'active':''}" onclick="goto('adm-k')">🎲<br>Karts</button>
+    <button class="nb ${p==='adm-s'?'active':''}" onclick="goto('adm-s')">📅<br>Etapas</button>
+    <button class="nb ${p==='cfg'?'active':''}" onclick="goto('cfg')">⚙️<br>Config.</button>`:''}
+  </div>`;
+}
+
+// ====================== RANKING GERAL ======================
+function renderStandings(){
+  const cat=G.standCat;const st=calcSt(cat);
+  let pod='';
+  if(st.length>=1){
+    pod='<div class="podium">';
+    if(st[1])pod+=`<
