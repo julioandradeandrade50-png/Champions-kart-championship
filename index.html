@@ -306,4 +306,347 @@ function renderStandings(){
   let pod='';
   if(st.length>=1){
     pod='<div class="podium">';
-    if(st[1])pod+=`<
+    if(st[1])pod+=`<div class="pp pp2"><div class="pm">🥈</div><div class="pp-pos">2°</div><div class="ppn">${st[1].pilotName}</div><div class="ppp">${st[1].total} pts</div></div>`;
+    if(st[0])pod+=`<div class="pp pp1"><div class="pm">🥇</div><div class="pp-pos">1°</div><div class="ppn">${st[0].pilotName}</div><div class="ppp">${st[0].total} pts</div></div>`;
+    if(st[2])pod+=`<div class="pp pp3"><div class="pm">🥉</div><div class="pp-pos">3°</div><div class="ppn">${st[2].pilotName}</div><div class="ppp">${st[2].total} pts</div></div>`;
+    pod+='</div>';
+  }
+  let tbl=`<div class="tw"><table><thead><tr><th>Pos</th><th>Piloto</th><th>Total</th>`;
+  G.data.stages.forEach(s=>{tbl+=`<th>${s.name}</th>`;});
+  tbl+=`</tr></thead><tbody>`;
+  if(!st.length)tbl+=`<tr><td colspan="20" style="text-align:center;color:#aaa;padding:30px;">Nenhum dado ainda.</td></tr>`;
+  st.forEach((s,i)=>{
+    const bg=i===0?'#fffbeb':i===1?'#f9fafb':i===2?'#fff8f4':'white';
+    const pc=i<3?['p1','p2','p3'][i]:'';
+    tbl+=`<tr style="background:${bg}"><td><div class="pb ${pc}">${i+1}</div></td>`;
+    tbl+=`<td><strong>${s.pilotName}</strong>${s.pilotNumber?`<br><small style="color:#aaa;">#${s.pilotNumber}</small>`:''}</td>`;
+    tbl+=`<td><span class="ptb">${s.total}</span></td>`;
+    s.rows.forEach(r=>{
+      tbl+=`<td><div style="font-weight:800;">${r.points}</div>`;
+      if(r.bonus>0)tbl+=`<div style="font-size:11px;color:#10b981;">+${r.bonus}</div>`;
+      if(r.pen>0)tbl+=`<div style="font-size:11px;color:#dc2626;">-${r.pen}</div>`;
+      tbl+=`</td>`;
+    });
+    tbl+=`</tr>`;
+  });
+  tbl+=`</tbody></table></div>`;
+  return `<div class="card"><div class="ct">🏆 Ranking Geral</div>
+    <div class="tabs">
+      <button class="tab ${cat==='Dinos'?'active':''}" onclick="G.standCat='Dinos';render()">🦕 Dinos — Senior</button>
+      <button class="tab ${cat==='Baby Dinos'?'active':''}" onclick="G.standCat='Baby Dinos';render()">🐣 Baby Dinos — Graduados</button>
+    </div>${pod}${tbl}</div>`;
+}
+
+// ====================== RANKING ETAPAS ======================
+function renderStageView(){
+  const cat=G.viewCat;let cards='';
+  if(!G.data.stages.length){cards='<p style="text-align:center;color:#aaa;padding:30px;">Nenhuma etapa ainda.</p>';}
+  else{
+    G.data.stages.forEach(stage=>{
+      const isO=G.openStageId===stage.id;
+      const ds=stage.date?new Date(stage.date+'T00:00:00').toLocaleDateString('pt-BR'):'';
+      const draw=(stage.kartDraw&&stage.kartDraw[cat])||[];
+      const q=stage.qualifying[cat]||[];
+      let body='';
+      if(isO){
+        body+=`<div class="sectit">🎲 Karts Sorteados</div>`;
+        if(draw.length){draw.forEach((r,i)=>{body+=`<div class="krow"><div style="display:flex;align-items:center;gap:10px;">${r.pilotNumber?`<div class="pnum">${r.pilotNumber}</div>`:''}<strong>${i+1}. ${r.pilotName}</strong></div><span class="ktag">Kart ${r.kartNum}</span></div>`;});}
+        else body+=`<p style="color:#aaa;font-size:13px;font-style:italic;">Sorteio nao realizado.</p>`;
+        body+=`<div class="sectit">⏱ Qualifying</div>`;
+        if(q.length){
+          body+=`<div class="tw"><table><thead><tr><th>Pos</th><th>Piloto</th><th>Tempo</th><th>Pts</th></tr></thead><tbody>`;
+          q.forEach((r,i)=>{const pc=i<3?['p1','p2','p3'][i]:'';body+=`<tr><td><div class="pb ${pc}">${i+1}</div></td><td><strong>${r.pilotName}</strong></td><td style="font-family:monospace;font-weight:700;color:#3b82f6;">${r.time}</td><td style="font-weight:800;">${r.points}</td></tr>`;});
+          body+=`</tbody></table></div>`;
+        }else body+=`<p style="color:#aaa;font-size:13px;font-style:italic;">Sem dados.</p>`;
+        ['battery1','battery2'].forEach((bk,bi)=>{
+          const bArr=stage[bk][cat]||[];
+          body+=`<div class="sectit">🏁 ${bi+1}ª Bateria</div>`;
+          if(bArr.length){
+            const sorted=[...bArr].sort((a,b)=>{if(a.disqualified||a.didNotParticipate)return 1;if(b.disqualified||b.didNotParticipate)return -1;return a.position-b.position;});
+            body+=`<div class="tw"><table><thead><tr><th>Pos</th><th>Piloto</th><th>Melhor Volta</th><th>Pts</th><th>Status</th></tr></thead><tbody>`;
+            sorted.forEach(r=>{
+              let sl='',sc='';
+              if(r.disqualified){sl='DCLAS.';sc='color:#dc2626;font-weight:800;';}
+              else if(r.didNotParticipate){sl='Nao Part.';sc='color:#aaa;';}
+              else if(r.penalties>0){sl='-'+r.penalties+' pts';sc='color:#f59e0b;font-weight:700;';}
+              const sp=r.disqualified||r.didNotParticipate?'—':r.position+'°';
+              const pp=r.disqualified||r.didNotParticipate?'0':r.points;
+              const pc=(!r.disqualified&&!r.didNotParticipate&&r.position>0&&r.position<4)?['p1','p2','p3'][r.position-1]:'';
+              body+=`<tr><td><div class="pb ${pc}">${sp}</div></td><td><strong>${r.pilotName}</strong></td><td style="font-family:monospace;font-weight:700;color:#10b981;">${r.bestLap||'—'}</td><td style="font-weight:800;">${pp}</td><td style="${sc}">${sl}</td></tr>`;
+            });
+            body+=`</tbody></table></div>`;
+          }else body+=`<p style="color:#aaa;font-size:13px;font-style:italic;">Sem dados.</p>`;
+        });
+      }
+      cards+=`<div class="stg-card ${isO?'open':''}" onclick="G.openStageId=G.openStageId==='${stage.id}'?null:'${stage.id}';render()">
+        <div class="stg-hdr"><div><div class="stg-name">${stage.name}</div><div class="stg-date">📅 ${ds}</div></div><span style="font-size:22px;color:#ccc;">${isO?'▲':'▼'}</span></div>
+        ${isO?`<div class="stg-body" onclick="event.stopPropagation()">${body}</div>`:''}
+      </div>`;
+    });
+  }
+  return `<div class="card"><div class="ct">📋 Ranking das Etapas</div>
+    <div class="tabs">
+      <button class="tab ${cat==='Dinos'?'active':''}" onclick="G.viewCat='Dinos';render()">🦕 Dinos</button>
+      <button class="tab ${cat==='Baby Dinos'?'active':''}" onclick="G.viewCat='Baby Dinos';render()">🐣 Baby Dinos</button>
+    </div>
+    <p style="font-size:13px;color:#888;margin-bottom:14px;">Toque em uma etapa para expandir.</p>
+    ${cards}</div>`;
+}
+
+// ====================== MELHORES VOLTAS ======================
+function renderBestLaps(){
+  let html='';
+  ['Dinos','Baby Dinos'].forEach(cat=>{
+    html+=`<div style="margin-bottom:22px;"><div style="font-weight:900;font-size:15px;margin-bottom:10px;">${cat==='Dinos'?'🦕':'🐣'} ${cat}</div>`;
+    let found=false;
+    G.data.stages.forEach(stage=>{
+      const allB=[...(stage.battery1[cat]||[]),...(stage.battery2[cat]||[])].filter(b=>b.bestLap&&!b.disqualified&&!b.didNotParticipate);
+      if(allB.length){allB.sort((a,b)=>a.bestLap.localeCompare(b.bestLap));html+=`<div class="brow"><span style="font-size:26px;">🏁</span><div><div class="btime">${allB[0].bestLap}</div><div class="bpilot">${allB[0].pilotName}</div><div class="bstage">${stage.name} — Baterias</div></div></div>`;found=true;}
+      const q=stage.qualifying[cat]||[];
+      if(q.length){html+=`<div class="brow"><span style="font-size:26px;">⏱</span><div><div class="btime">${q[0].time}</div><div class="bpilot">${q[0].pilotName}</div><div class="bstage">${stage.name} — Qualifying</div></div></div>`;found=true;}
+    });
+    if(!found)html+=`<p style="color:#aaa;font-size:13px;font-style:italic;">Sem dados ainda.</p>`;
+    html+=`</div>`;
+  });
+  return `<div class="card"><div class="ct">⚡ Melhores Voltas</div>${html}</div>`;
+}
+
+// ====================== PRESENÇA ======================
+function renderPresence(){
+  if(!G.data.stages.length)return `<div class="card"><div class="ct">👥 Presença</div><p style="text-align:center;color:#aaa;padding:30px;">Nenhuma etapa ainda.</p></div>`;
+  let html=`<div class="card"><div class="ct">👥 Presença por Etapa</div>`;
+  G.data.stages.forEach(stage=>{
+    const ds=stage.date?new Date(stage.date+'T00:00:00').toLocaleDateString('pt-BR'):'';
+    html+=`<div class="acc"><div class="ach" onclick="toggleAcc('ac_${stage.id}')">📅 ${stage.name} — ${ds} <span>▼</span></div><div class="acb" id="ac_${stage.id}">`;
+    ['Dinos','Baby Dinos'].forEach(cat=>{
+      const b1=stage.battery1[cat]||[];const b2=stage.battery2[cat]||[];
+      const rows=G.data.pilots.filter(p=>p.cat===cat).map(pilot=>{
+        const r1=b1.find(x=>x.pilotId===pilot.id);const r2=b2.find(x=>x.pilotId===pilot.id);
+        let status='sem-dado';
+        if(r1||r2){if((r1&&r1.disqualified)||(r2&&r2.disqualified))status='dcl';else if((r1&&r1.didNotParticipate)&&(!r2||(r2&&r2.didNotParticipate)))status='absent';else status='present';}
+        const name=(r1&&r1.pilotName)||(r2&&r2.pilotName)||pilot.name;
+        return{name,status};
+      });
+      const nP=rows.filter(r=>r.status==='present').length;
+      const nA=rows.filter(r=>r.status==='absent').length;
+      const nD=rows.filter(r=>r.status==='dcl').length;
+      html+=`<div style="margin-bottom:16px;"><div style="font-weight:800;font-size:14px;margin-bottom:8px;">${cat==='Dinos'?'🦕':'🐣'} ${cat}</div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:13px;margin-bottom:10px;">
+          <span style="color:#16a34a;">✅ Presentes: <strong>${nP}</strong></span>
+          <span style="color:#dc2626;">❌ Ausentes: <strong>${nA}</strong></span>
+          ${nD?`<span style="color:#c2410c;">⛔ Dclas.: <strong>${nD}</strong></span>`:''}
+        </div><div class="pg">`;
+      rows.forEach(r=>{let cls='',ic='',lb='';if(r.status==='present'){cls='pres';ic='✅';lb='Presente';}else if(r.status==='absent'){cls='abs';ic='❌';lb='Ausente';}else if(r.status==='dcl'){cls='dcl';ic='⛔';lb='Desclassificado';}else{cls='abs';ic='—';lb='Sem dado';}html+=`<div class="pi ${cls}">${ic}<br>${r.name}<br><small>${lb}</small></div>`;});
+      html+=`</div></div>`;
+    });
+    html+=`</div></div>`;
+  });
+  return html+`</div>`;
+}
+
+// ====================== LISTA PILOTOS (visualização) ======================
+function renderPilotList(){
+  const dinos=G.data.pilots.filter(p=>p.cat==='Dinos');
+  const baby=G.data.pilots.filter(p=>p.cat==='Baby Dinos');
+  let html=`<div class="card"><div class="ct">🪖 Pilotos do Campeonato</div>
+    <div class="stats">
+      <div class="stc"><div class="stn">${G.data.pilots.length}</div><div class="stl">Total</div></div>
+      <div class="stc"><div class="stn">${dinos.length}</div><div class="stl">Dinos</div></div>
+      <div class="stc"><div class="stn">${baby.length}</div><div class="stl">Baby Dinos</div></div>
+    </div>
+    <div style="font-weight:900;font-size:14px;margin-bottom:10px;">🦕 Dinos — Senior</div>`;
+  if(!dinos.length)html+=`<p style="color:#aaa;font-size:13px;margin-bottom:14px;">Nenhum piloto.</p>`;
+  dinos.forEach(p=>{html+=`<div class="li"><div style="display:flex;align-items:center;gap:12px;">${p.number?`<div class="pnum">${p.number}</div>`:'<div style="width:36px;height:36px;background:#f3f4f6;border-radius:50%;"></div>'}<strong>${p.name}</strong></div><span class="catd cd">Dinos</span></div>`;});
+  html+=`<div style="font-weight:900;font-size:14px;margin:16px 0 10px;">🐣 Baby Dinos — Graduados</div>`;
+  if(!baby.length)html+=`<p style="color:#aaa;font-size:13px;">Nenhum piloto.</p>`;
+  baby.forEach(p=>{html+=`<div class="li"><div style="display:flex;align-items:center;gap:12px;">${p.number?`<div class="pnum">${p.number}</div>`:'<div style="width:36px;height:36px;background:#f3f4f6;border-radius:50%;"></div>'}<strong>${p.name}</strong></div><span class="catd cb">Baby Dinos</span></div>`;});
+  return html+`</div>`;
+}
+
+// ====================== ADMIN: PAINEL ======================
+function renderHome(){
+  const d=G.data;
+  return `<div class="card"><div class="ct">🏠 Painel do Administrador</div>
+    <div class="stats">
+      <div class="stc"><div class="stn">${d.pilots.length}</div><div class="stl">Pilotos</div></div>
+      <div class="stc"><div class="stn">${d.stages.length}</div><div class="stl">Etapas</div></div>
+      <div class="stc"><div class="stn">${d.karts.length}</div><div class="stl">Karts</div></div>
+    </div>
+    ${d.regulation?`<div style="padding:14px;background:#f9fafb;border-radius:10px;white-space:pre-wrap;font-size:14px;color:#444;margin-top:8px;">${d.regulation}</div>`:''}
+    ${d.partners.length?`<div style="margin-top:14px;"><div style="font-weight:800;font-size:13px;margin-bottom:8px;">🤝 Parceiros</div><div style="display:flex;flex-wrap:wrap;gap:8px;">${d.partners.map(p=>`<span style="background:#f3f4f6;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;">${p}</span>`).join('')}</div></div>`:''}
+  </div>`;
+}
+
+// ====================== ADMIN: PILOTOS ======================
+function renderAdmP(){
+  const dinos=G.data.pilots.filter(p=>p.cat==='Dinos');
+  const baby=G.data.pilots.filter(p=>p.cat==='Baby Dinos');
+  return `<div class="card"><div class="ct">👤 Gerenciar Pilotos</div>
+    <div class="fsec"><h3>Adicionar</h3>
+      <form onsubmit="addPilot(event)">
+        <div class="f"><label>Nome</label><input type="text" id="pN" placeholder="Nome do piloto" required></div>
+        <div class="frow">
+          <div class="f"><label>Numero</label><input type="text" id="pNm" placeholder="Ex: 77"></div>
+          <div class="f"><label>Categoria</label><select id="pC"><option value="Dinos">Dinos (Senior)</option><option value="Baby Dinos">Baby Dinos (Graduados)</option></select></div>
+        </div>
+        <button type="submit" class="btn bg">➕ Adicionar</button>
+      </form>
+    </div>
+    <div style="font-weight:900;font-size:14px;margin-bottom:10px;">🦕 Dinos (${dinos.length})</div>
+    ${dinos.map(p=>`<div class="li"><div style="display:flex;align-items:center;gap:12px;">${p.number?`<div class="pnum">${p.number}</div>`:''}<div><strong>${p.name}</strong><br><span class="catd cd">Dinos</span></div></div><button class="dbtn" onclick="delPilot('${p.id}')">Excluir</button></div>`).join('')||'<p style="color:#aaa;margin-bottom:12px;">Nenhum.</p>'}
+    <div style="font-weight:900;font-size:14px;margin:16px 0 10px;">🐣 Baby Dinos (${baby.length})</div>
+    ${baby.map(p=>`<div class="li"><div style="display:flex;align-items:center;gap:12px;">${p.number?`<div class="pnum">${p.number}</div>`:''}<div><strong>${p.name}</strong><br><span class="catd cb">Baby Dinos</span></div></div><button class="dbtn" onclick="delPilot('${p.id}')">Excluir</button></div>`).join('')||'<p style="color:#aaa;">Nenhum.</p>'}
+  </div>`;
+}
+
+// ====================== ADMIN: KARTS ======================
+function renderAdmK(){
+  return `<div class="card"><div class="ct">🎲 Karts</div>
+    <div class="fsec"><h3>Cadastrar</h3>
+      <form onsubmit="addKart(event)">
+        <div class="f"><label>Numero</label><input type="text" id="kN" placeholder="Ex: 01" required></div>
+        <button type="submit" class="btn bg">➕ Adicionar</button>
+      </form>
+    </div>
+    <div class="info ib">ℹ️ O sorteio de cada etapa fica em: Etapas → Editar → aba Sorteio.</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;">
+      ${G.data.karts.map(k=>`<div style="background:#f9fafb;padding:12px;border-radius:10px;text-align:center;position:relative;border:1px solid #f3f4f6;"><div style="font-weight:900;">Kart ${k.num}</div><button onclick="delKart('${k.id}')" style="position:absolute;top:4px;right:4px;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:5px;padding:1px 7px;cursor:pointer;">×</button></div>`).join('')||'<p style="color:#aaa;">Nenhum kart.</p>'}
+    </div>
+  </div>`;
+}
+
+// ====================== ADMIN: ETAPAS ======================
+function renderAdmS(){
+  return `<div class="card"><div class="ct">📅 Gerenciar Etapas</div>
+    <div class="fsec"><h3>Nova Etapa</h3>
+      <form onsubmit="addStage(event)">
+        <div class="frow">
+          <div class="f"><label>Nome</label><input type="text" id="sN" placeholder="Ex: 1a Etapa" required></div>
+          <div class="f"><label>Data</label><input type="date" id="sD" required></div>
+        </div>
+        <button type="submit" class="btn bg">➕ Criar</button>
+      </form>
+    </div>
+    ${G.data.stages.length===0?'<p style="color:#aaa;">Nenhuma etapa.</p>':''}
+    ${G.data.stages.map(s=>`<div class="li"><div><strong>${s.name}</strong><br><span style="font-size:13px;color:#888;">📅 ${new Date(s.date+'T00:00:00').toLocaleDateString('pt-BR')}</span></div><div style="display:flex;gap:8px;"><button class="btn bb bsm" onclick="openEdit('${s.id}')">✏️ Editar</button><button class="dbtn" onclick="delStage('${s.id}')">Excluir</button></div></div>`).join('')}
+  </div>`;
+}
+
+// ====================== ADMIN: EDITOR ETAPA ======================
+function renderEdit(){
+  const stage=G.data.stages.find(s=>s.id===G.editStageId);
+  if(!stage){goto('adm-s');return'';}
+  const tab=G.editTab,cat=G.editCat;
+  const ds=stage.date?new Date(stage.date+'T00:00:00').toLocaleDateString('pt-BR'):'';
+  const pilots=G.data.pilots.filter(p=>p.cat===cat);
+  let body='';
+  if(tab==='draw'){
+    const draw=(stage.kartDraw&&stage.kartDraw[cat])||[];
+    body=`<div class="info ib">🎲 O sorteio fica gravado permanentemente nesta etapa.</div>
+    ${draw.length?`<div style="margin-bottom:16px;"><div style="font-weight:800;margin-bottom:10px;">✅ Sorteio arquivado — ${cat}:</div>${draw.map((r,i)=>`<div class="krow"><div style="display:flex;align-items:center;gap:10px;">${r.pilotNumber?`<div class="pnum">${r.pilotNumber}</div>`:''}<strong>${i+1}. ${r.pilotName}</strong></div><span class="ktag">Kart ${r.kartNum}</span></div>`).join('')}</div>`:`<div class="info iy">⚠️ Nenhum sorteio para ${cat} ainda.</div>`}
+    <form onsubmit="doDraw(event)"><button type="submit" class="btn br">🎲 ${draw.length?'Refazer':'Realizar'} Sorteio — ${cat}</button></form>`;
+  }
+  if(tab==='qualifying'){
+    const ex=stage.qualifying[cat]||[];
+    body=`<div class="info ib">⏱ Melhor tempo de cada piloto nas 2 voltas. Formato: <code>1:23.456</code></div>
+    <form onsubmit="saveQ(event)">
+      ${pilots.map(p=>{const e2=ex.find(x=>x.pilotId===p.id);return `<div class="f"><label>${p.name}${p.number?' #'+p.number:''}</label><input type="text" id="qt_${p.id}" placeholder="1:23.456" value="${e2?e2.time:''}"></div>`;}).join('')}
+      ${!pilots.length?'<p style="color:#aaa;">Nenhum piloto nesta categoria.</p>':''}
+      <button type="submit" class="btn bg">💾 Salvar Qualifying</button>
+    </form>`;
+  }
+  if(tab==='battery1'||tab==='battery2'){
+    const bn=tab==='battery1'?1:2;
+    const ex=stage['battery'+bn][cat]||[];
+    body=`<div class="info ib">🏁 Posicao, melhor volta, penalidades, desclassificados e ausentes.</div>
+    <form onsubmit="saveB(event,${bn})">
+      <div class="tw"><table><thead><tr><th>Piloto</th><th>Posicao</th><th>Melhor Volta</th><th>Penalidade</th><th style="text-align:center">Dclas.</th><th style="text-align:center">N.Part.</th></tr></thead><tbody>
+      ${pilots.map(p=>{const e2=ex.find(x=>x.pilotId===p.id)||{};return `<tr><td><strong>${p.name}</strong>${p.number?`<br><small style="color:#aaa;">#${p.number}</small>`:''}</td><td><input type="number" id="bp${bn}_${p.id}" min="1" placeholder="1" value="${e2.position||''}" style="width:60px;padding:8px;border:2px solid #e5e7eb;border-radius:7px;font-size:15px;"></td><td><input type="text" id="bv${bn}_${p.id}" placeholder="1:23.456" value="${e2.bestLap||''}" style="width:110px;padding:8px;border:2px solid #e5e7eb;border-radius:7px;font-size:15px;"></td><td><input type="number" id="bn${bn}_${p.id}" min="0" value="${e2.penalties||0}" style="width:60px;padding:8px;border:2px solid #e5e7eb;border-radius:7px;font-size:15px;"></td><td style="text-align:center"><input type="checkbox" id="bd${bn}_${p.id}" ${e2.disqualified?'checked':''} style="width:22px;height:22px;cursor:pointer;"></td><td style="text-align:center"><input type="checkbox" id="bx${bn}_${p.id}" ${e2.didNotParticipate?'checked':''} style="width:22px;height:22px;cursor:pointer;"></td></tr>`;}).join('')}
+      </tbody></table></div>
+      ${!pilots.length?'<p style="color:#aaa;margin-top:10px;">Nenhum piloto.</p>':''}
+      <button type="submit" class="btn bg" style="margin-top:14px;">💾 Salvar ${bn}ª Bateria</button>
+    </form>`;
+  }
+  return `<div class="wrap">${renderHeader()}<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+      <div><div class="ct" style="margin-bottom:4px;">✏️ ${stage.name}</div><div style="font-size:13px;color:#888;">📅 ${ds}</div></div>
+      <button class="btn bw bsm" onclick="goto('adm-s')">← Voltar</button>
+    </div>
+    <div class="tabs">
+      <button class="tab ${tab==='draw'?'active':''}" onclick="setTab('draw')">🎲 Sorteio</button>
+      <button class="tab ${tab==='qualifying'?'active':''}" onclick="setTab('qualifying')">⏱ Qualifying</button>
+      <button class="tab ${tab==='battery1'?'active':''}" onclick="setTab('battery1')">🏁 1ª Bateria</button>
+      <button class="tab ${tab==='battery2'?'active':''}" onclick="setTab('battery2')">🏁 2ª Bateria</button>
+    </div>
+    <div class="tabs" style="margin-top:-8px;">
+      <button class="tab ${cat==='Dinos'?'active':''}" onclick="setCat('Dinos')">🦕 Dinos</button>
+      <button class="tab ${cat==='Baby Dinos'?'active':''}" onclick="setCat('Baby Dinos')">🐣 Baby Dinos</button>
+    </div>
+    ${body}
+  </div></div>`;
+}
+
+// ====================== ADMIN: CONFIG ======================
+function renderCfg(){
+  const d=G.data;
+  return `<div class="card"><div class="ct">⚙️ Configuracoes</div>
+    <div class="fsec"><h3>Campeonato</h3>
+      <div class="f"><label>Nome</label><input type="text" id="cN" value="${d.name}"></div>
+      <div class="f"><label>Regulamento</label><textarea id="cR" rows="5" style="width:100%;padding:10px;border:2px solid #e5e7eb;border-radius:8px;font-size:14px;line-height:1.5;">${d.regulation||''}</textarea></div>
+      <div class="f"><label>Parceiros (virgula)</label><input type="text" id="cP" value="${d.partners.join(', ')}"></div>
+      <button class="btn bg" onclick="saveCfg()">💾 Salvar</button>
+    </div>
+    <div class="fsec"><h3>Pontuacao</h3>
+      <div class="f"><label>Qualifying — 1o ao ultimo</label><input type="text" id="cQP" value="${d.points.qualifying.join(', ')}"></div>
+      <div class="f"><label>Baterias — 1o ao ultimo</label><input type="text" id="cBP" value="${d.points.battery.join(', ')}"></div>
+      <div class="frow">
+        <div class="f"><label>Bonus melhor volta bateria</label><input type="number" id="cBL" value="${d.points.bestLapBonus}"></div>
+        <div class="f"><label>Bonus melhor volta qualifying</label><input type="number" id="cQL" value="${d.points.bestQualifyBonus}"></div>
+      </div>
+      <button class="btn bg" onclick="savePts()">💾 Salvar Pontuacao</button>
+    </div>
+    <div class="fsec"><h3>Backup</h3>
+      <button class="btn bb" onclick="expData()">📥 Exportar Backup (JSON)</button>
+      <label class="btn bw" style="display:block;text-align:center;cursor:pointer;margin-top:8px;">📤 Importar Backup<input type="file" accept=".json" onchange="impData(event)" style="display:none;"></label>
+    </div>
+    <div class="fsec"><h3>Credenciais de Acesso</h3>
+      <div style="border-radius:10px;overflow:hidden;border:1px solid #f3f4f6;">
+        <div style="display:flex;gap:12px;align-items:center;padding:13px 16px;background:#fff5f5;border-bottom:1px solid #f3f4f6;">
+          <span style="font-size:22px;">👑</span><div><strong>Administrador</strong><br><span style="font-size:13px;color:#666;">usuario: <code>admin</code> | senha: <code>admin123</code></span></div></div>
+        <div style="display:flex;gap:12px;align-items:center;padding:13px 16px;background:#eff6ff;">
+          <span style="font-size:22px;">🪖</span><div><strong>Pilotos (todos compartilham)</strong><br><span style="font-size:13px;color:#666;">usuario: <code>piloto</code> | senha: <code>piloto123</code></span></div></div>
+      </div>
+    </div>
+  </div>`;
+}
+function saveCfg(){G.data.name=document.getElementById('cN').value||G.data.name;G.data.regulation=document.getElementById('cR').value;G.data.partners=(document.getElementById('cP').value||'').split(',').map(x=>x.trim()).filter(Boolean);save();alert('Salvo!');render();}
+function savePts(){G.data.points.qualifying=document.getElementById('cQP').value.split(',').map(x=>parseInt(x)).filter(n=>!isNaN(n));G.data.points.battery=document.getElementById('cBP').value.split(',').map(x=>parseInt(x)).filter(n=>!isNaN(n));G.data.points.bestLapBonus=parseInt(document.getElementById('cBL').value)||0;G.data.points.bestQualifyBonus=parseInt(document.getElementById('cQL').value)||0;save();alert('Pontuacao salva!');}
+function expData(){const blob=new Blob([JSON.stringify(G.data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='kart-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();}
+function impData(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{G.data=JSON.parse(ev.target.result);save();alert('Importado!');render();}catch{alert('Arquivo invalido.');}};r.readAsText(f);}
+
+// ====================== RENDER PRINCIPAL ======================
+function render(){
+  const el=document.getElementById('APP');if(!el)return;
+  if(!G.user){el.innerHTML=renderLogin();return;}
+  if(G.page==='edit'){el.innerHTML=renderEdit();return;}
+  const adminPages=['home','adm-p','adm-k','adm-s','cfg'];
+  if(G.user.role!=='admin'&&adminPages.includes(G.page))G.page='standings';
+  let content='';const p=G.page;
+  if(p==='standings')content=renderStandings();
+  else if(p==='stage-view')content=renderStageView();
+  else if(p==='bestlaps')content=renderBestLaps();
+  else if(p==='presence')content=renderPresence();
+  else if(p==='pilot-list')content=renderPilotList();
+  else if(p==='home')content=renderHome();
+  else if(p==='adm-p')content=renderAdmP();
+  else if(p==='adm-k')content=renderAdmK();
+  else if(p==='adm-s')content=renderAdmS();
+  else if(p==='cfg')content=renderCfg();
+  else content=G.user.role==='admin'?renderHome():renderStandings();
+  const bar=G.user.role==='pilot'?`<div class="readonly-bar">👁 Modo Visualização — Somente Leitura</div>`:'';
+  el.innerHTML=`<div class="wrap">${renderHeader()}${renderNav()}${bar}${content}</div>`;
+}
+setTimeout(()=>render(),50);
+</script>
+</body>
+</html>
